@@ -20,6 +20,10 @@ class Group(models.Model):
         """Метод возвращающий строку title."""
         return self.title
 
+    class Meta:
+        verbose_name = 'Группа'
+        verbose_name_plural = 'Группы'
+
 
 class Post(models.Model):
     """Текстовые посты, с указанием автора, даты создания и группы."""
@@ -88,6 +92,14 @@ class Comment(models.Model):
         verbose_name='Автор',
     )
 
+    def __str__(self):
+        """Метод возвращающий строку text."""
+        return self.text
+
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
 
 class Follow(models.Model):
     """Подписки на авторов."""
@@ -104,3 +116,7 @@ class Follow(models.Model):
         related_name='following',
         verbose_name='Автор',
     )
+
+    class Meta:
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'

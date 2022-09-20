@@ -41,13 +41,11 @@ class PostCreateFormTests(TestCase):
         shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
     def setUp(self):
-        # Создаем авторизованный клиент
         self.authorized_client = Client()
         self.authorized_client.force_login(PostCreateFormTests.user)
 
     def test_create_post(self):
         """Валидная форма создает новый пост."""
-        # берём байт-последовательность картинки
         small_gif = (
             b'\x47\x49\x46\x38\x39\x61\x02\x00'
             b'\x01\x00\x80\x00\x00\x00\x00\x00'
@@ -67,20 +65,16 @@ class PostCreateFormTests(TestCase):
             'group': PostCreateFormTests.group.id,
             'image': uploaded,
         }
-        # Отправляем POST-запрос
         response = self.authorized_client.post(
             reverse('posts:post_create'),
             data=form_data,
             follow=True
         )
-        # Проверяем, сработал ли редирект
         self.assertRedirects(response, reverse(
             'posts:profile',
             kwargs={'username': PostCreateFormTests.user.username}
         ))
-        # Проверяем, увеличилось ли число постов
         self.assertEqual(Post.objects.count(), len(posts_before) + 1)
-        # Проверяем, что создалась запись с заданными полями
         self.assertTrue(
             Post.objects.filter(
                 text=form_data['text'],
@@ -92,13 +86,11 @@ class PostCreateFormTests(TestCase):
 
     def test_edit_post(self):
         """Валидная форма редактирует n-ый пост."""
-        # Подсчитаем количество записей
         posts_count = Post.objects.count()
         form_data = {
             'text': 'Тестовый пост редактированный',
             'group': PostCreateFormTests.group2.id,
         }
-        # Отправляем POST-запрос
         response = self.authorized_client.post(
             reverse(
                 'posts:post_edit',
@@ -107,14 +99,11 @@ class PostCreateFormTests(TestCase):
             data=form_data,
             follow=True
         )
-        # Проверяем, сработал ли редирект
         self.assertRedirects(response, reverse(
             'posts:post_detail',
             kwargs={'post_id': PostCreateFormTests.post.id}
         ))
-        # Проверяем, не увеличилось ли число постов
         self.assertEqual(Post.objects.count(), posts_count)
-        # Проверяем, что получилась запись с заданными полями
         self.assertTrue(
             Post.objects.filter(
                 id=PostCreateFormTests.post.id,
@@ -130,7 +119,6 @@ class PostCreateFormTests(TestCase):
         form_data = {
             'text': 'Тестовый комментарий',
         }
-        # Отправляем POST-запрос
         response = self.authorized_client.post(
             reverse(
                 'posts:add_comment',
@@ -139,14 +127,11 @@ class PostCreateFormTests(TestCase):
             data=form_data,
             follow=True
         )
-        # Проверяем, сработал ли редирект
         self.assertRedirects(response, reverse(
             'posts:post_detail',
             kwargs={'post_id': PostCreateFormTests.post.id}
         ))
-        # Проверяем, увеличилось ли число комментариев
         self.assertEqual(Comment.objects.count(), len(comments_before) + 1)
-        # Проверяем, что создалась запись с заданными полями
         self.assertTrue(
             Comment.objects.filter(
                 text=form_data['text'],

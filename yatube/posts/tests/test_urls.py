@@ -39,6 +39,10 @@ class PostURLTests(TestCase):
             f'/posts/{PostURLTests.post.pk}/edit/': HTTPStatus.FOUND,
             '/create/': HTTPStatus.FOUND,
             f'/posts/{PostURLTests.post.pk}/comment/': HTTPStatus.FOUND,
+            '/follow/': HTTPStatus.FOUND,
+            f'/profile/{PostURLTests.user.username}/follow/': HTTPStatus.FOUND,
+            f'/profile/{PostURLTests.user.username}/unfollow/':
+                HTTPStatus.FOUND,
             '/unexisting_page/': HTTPStatus.NOT_FOUND,
         }
         for address, http_status in url_names.items():
@@ -113,6 +117,7 @@ class PostURLTests(TestCase):
             f'/posts/{PostURLTests.post.pk}/': 'posts/post_detail.html',
             f'/posts/{PostURLTests.post.pk}/edit/': 'posts/create_post.html',
             '/create/': 'posts/create_post.html',
+            '/follow/': 'posts/follow.html',
             '/unexisting_page/': 'core/404.html',
         }
         for address, template in templates_url_names.items():

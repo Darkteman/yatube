@@ -19,15 +19,12 @@ class PostPagesTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        # Создаем пользователя
         cls.user = User.objects.create_user(username='auth')
-        # Создаем группу
         cls.group = Group.objects.create(
             title='Тестовая группа',
             slug='test_slug',
             description='Тестовое описание группы',
         )
-        # Создаем и загружаем картинку
         small_gif = (
             b'\x47\x49\x46\x38\x39\x61\x02\x00'
             b'\x01\x00\x80\x00\x00\x00\x00\x00'
@@ -41,7 +38,6 @@ class PostPagesTests(TestCase):
             content=small_gif,
             content_type='image/gif',
         )
-        # Создаем пост
         cls.post = Post.objects.create(
             author=cls.user,
             text='Тестовый пост, в котором много букв',
@@ -78,6 +74,8 @@ class PostPagesTests(TestCase):
                 'posts/post_detail.html',
             reverse('posts:post_create'):
                 'posts/create_post.html',
+            reverse('posts:follow_index'):
+                'posts/follow.html',
         }
         for reverse_name, template in templates_pages_names.items():
             with self.subTest(reverse_name=reverse_name):
@@ -127,8 +125,8 @@ class PostPagesTests(TestCase):
         object = response.context['page_obj']
         self.assertFalse(object)
 
-    def test_ability_be_follower(self):
-        """Возможность подписываться и отписываться от других"""
+    def test_ability_following(self):
+        """Возможность подписываться на других пользователей"""
         follower_user = User.objects.create_user(username='follower_user')
         self.authorized_client.force_login(follower_user)
         self.authorized_client.get(reverse(
@@ -141,6 +139,14 @@ class PostPagesTests(TestCase):
         )
         self.assertTrue(follow)
 
+    def test_ability_unfollowing(self):
+        """Возможность отписываться от других пользователей"""
+        follower_user = User.objects.create_user(username='follower_user')
+        self.authorized_client.force_login(follower_user)
+        Follow.objects.create(
+            user=follower_user,
+            author=PostPagesTests.user,
+        )
         self.authorized_client.get(reverse(
             'posts:profile_unfollow',
             kwargs={'username': PostPagesTests.user.username}
@@ -188,6 +194,18 @@ class PostPagesTests(TestCase):
         post = response.context['page_obj'][0]
         self.checking_context(post)
 
+    def test_follow_index_page_show_correct_context(self):
+        """Шаблон follow_index сформирован с правильным контекстом."""
+        follower_user = User.objects.create_user(username='follower_user')
+        self.authorized_client.force_login(follower_user)
+        Follow.objects.create(
+            user=follower_user,
+            author=PostPagesTests.user,
+        )
+        response = self.authorized_client.get(reverse('posts:follow_index'))
+        post = response.context['page_obj'][0]
+        self.checking_context(post)
+
     def test_group_posts_page_show_correct_context(self):
         """Шаблон group_posts сформирован с правильным контекстом."""
         response = self.authorized_client.get(reverse(
@@ -211,6 +229,8 @@ class PostPagesTests(TestCase):
         ))
         self.assertEqual(response.context.get('author').username,
                          PostPagesTests.user.username)
+        self.assertIsNotNone(response.context.get('following'))
+        self.assertIsNotNone(response.context.get('check_author_is_user'))
         post = response.context['page_obj'][0]
         self.checking_context(post)
 
@@ -222,6 +242,8 @@ class PostPagesTests(TestCase):
         ))
         post = response.context['post']
         self.checking_context(post)
+        form_field = response.context.get('form').fields.get('text')
+        self.assertIsInstance(form_field, forms.fields.CharField)
 
     def test_post_does_not_exist_in_any_group(self):
         """Тестовый пост не попадает на стр. другой группы."""
@@ -245,14 +267,11 @@ class PostPagesTests(TestCase):
         }
         for reverse_name in pages_names:
             response = self.authorized_client.get(reverse_name)
-            # Словарь ожидаемых типов полей формы:
-            # указываем, объектами какого класса должны быть поля формы
             form_fields = {
                 'text': forms.fields.CharField,
                 'group': forms.fields.ChoiceField,
                 'image': forms.fields.ImageField,
             }
-            # Проверяем, что типы полей формы в словаре context соответствуют
             for value, expected in form_fields.items():
                 with self.subTest(value=value):
                     form_field = response.context.get('form').fields.get(value)
@@ -303,7 +322,6 @@ class PaginatorViewsTest(TestCase):
 
     def test_first_page_contains_ten_records(self):
         """Проверка пагинатора на 1ой странице."""
-        # Количество постов на первой странице равно 10.
         reverses = {
             reverse('posts:index'),
             reverse('posts:group_posts',
@@ -320,7 +338,6 @@ class PaginatorViewsTest(TestCase):
 
     def test_second_page_contains_three_records(self):
         """Проверка пагинатора на 2ой странице."""
-        # Количество постов на второй странице должно быть 3.
         reverses = {
             reverse('posts:index'),
             reverse('posts:group_posts',
