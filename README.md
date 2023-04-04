@@ -1,3 +1,78 @@
-# hw05_final
+# Социальная сеть Yatube
 
-[![CI](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml/badge.svg?branch=master)](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml)
+### Краткое описание
+
+Социальная сеть с возможностью создавать посты, группы, оставлять комментарии, подписываться на понравившихся авторов и группы.
+В реализации используются пагинация и кеширование, написаны тесты, проверяющие работу сервиса.
+
+### Технологии 
+Python 3.7,
+Django 2.2,
+Pytest 6.2,
+Pillow 8.3,
+Requests 2.26,
+Thumbnail 12.7
+
+### Функционал проекта: 
+
+Залогиненные пользователи могут:
+- Просматривать, публиковать, удалять и редактировать свои публикации;
+- Просматривать информацию о сообществах;
+- Просматривать и публиковать комментарии от своего имени к публикациям других пользователей, удалять и редактировать свои комментарии;
+- Подписываться на других пользователей и просматривать свои подписки.
+
+Анонимные пользователи могут:
+- Просматривать публикации;
+- Просматривать информацию о сообществах;
+- Просматривать комментарии.
+
+## Как запустить проект локально:
+
+Клонировать репозиторий, выбрать нужный коммит и перейти в папку проекта в командной строке:
+
+```bash
+git clone https://github.com/Darkteman/yatube.git
+```
+```bash
+cd yatube/
+```
+Cоздать и активировать виртуальное окружение:
+
+```bash
+python -m venv venv
+```
+```bash
+source venv/bin/activate (Linux)
+source venv/Scripts/activate (Windows)
+```
+Установить зависимости из файла requirements.txt:
+
+```bash
+python -m pip install --upgrade pip
+```
+```bash
+pip install -r requirements.txt
+```
+Выполнить миграции:
+
+```bash
+python manage.py migrate
+```
+Запустить проект:
+
+```bash
+python manage.py runserver
+```
+Создать суперпользователя Django:
+```bash
+python manage.py createsuperuser
+```
+Сам проект и админ-панель доступны по адресам:
+```bash
+http://127.0.0.1:8000
+```
+```bash
+http://127.0.0.1:8000/admin
+```
+
+Автор: [Пищулин А.А.](https://github.com/Darkteman)
